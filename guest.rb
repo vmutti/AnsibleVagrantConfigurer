@@ -11,13 +11,21 @@ class Guest
 
   def define(globalvagrant)
     globalvagrant.vm.define @name, autostart: @autostart do |vagrant|
+      vagrant.vm.synced_folder ".", "/vagrant", disabled: true
       if @provider=='virtualbox'
         vagrant.vm.provider "virtualbox" do |vbox|
+          vbox.check_guest_additions = false
+          vbox.name = @name.gsub(/\//,'-')
+
+          vbox.customize ["modifyvm", :id, "--clipboard-mode", "bidirectional"]
+          vbox.customize ["modifyvm", :id, "--ioapic", "on"]
+          vbox.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
           @vb_callbacks.each do |cb|
             cb.call(vbox)
           end
         end
       elsif @provider=='libvirt'
+        libvirt.socket='/run/libvirt/libvirt-sock'
         @lv_callbacks.each do |cb|
           cb.call(libvirt)
         end
@@ -63,6 +71,10 @@ class Guest
   def set_ssh_private_key_path(path)
     callback() do |cb|
       cb.ssh.private_key_path=path
+      cb.ssh.keys_only = true
+      cb.ssh.insert_key = false
+      cb.ssh.dsa_authentication = false
+      cb.ssh.verify_host_key = :accept_new_or_local_tunnel
     end
   end
 
