@@ -25,7 +25,7 @@ class AnsibleHostvars
     end
     guest = Guest.new(name)
     if config.has_key?("provider") 
-       guest.set_provider(config['provide'])
+       guest.set_provider(config['provider'])
     else
       raise('Must provide provider for '+name)
     end
