@@ -11,6 +11,7 @@ class Guest
 
   def define(globalvagrant)
     globalvagrant.vm.define @name, autostart: @autostart do |vagrant|
+      vagrant.vm.hostname = @name.gsub(/\//,'-')
       vagrant.vm.synced_folder ".", "/vagrant", disabled: true
       if @provider=='virtualbox'
         vagrant.vm.provider "virtualbox" do |vbox|
@@ -107,8 +108,13 @@ class Guest
       libv.cpu_model='qemu64'
     end
   end
-  def set_virt_provider(provider="virtualbox")
+  def set_provider(provider="virtualbox")
     @provider=provider
+  end
+  def set_virt_provider(provider='hyperv')
+    vb() do |vbox|
+      vbox.customize ["modifyvm", :id, "--paravirtprovider", provider]
+    end
   end
   def set_nested_virt(enable=false)
     vb() do |vbox|

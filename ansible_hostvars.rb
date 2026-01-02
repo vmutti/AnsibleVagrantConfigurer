@@ -24,6 +24,12 @@ class AnsibleHostvars
       end
     end
     guest = Guest.new(name)
+    if config.has_key?("provider") 
+       guest.set_provider(config['provide'])
+    else
+      raise('Must provide provider for '+name)
+    end
+
     if config.has_key?("box_name") 
        guest.set_box_name(config['box_name'])
     else
@@ -42,11 +48,12 @@ class AnsibleHostvars
     if config.has_key?("box_url") 
       guest.set_box_url(config['box_url'])
     end
+
     username=config.fetch("username","vagrant")
     guest.set_username(username,config.fetch("home_path","/home/#{username}"))
     guest.set_autostart(config.fetch("autostart",false))
     guest.set_cpu_cores(config.fetch("cpu_cores",1))
-    guest.set_virt_provider(config.fetch("virt_provider","virtualbox"))
+    guest.set_virt_provider(config.fetch("virt_provider","hyperv"))
     guest.set_nested_virt(config.fetch("nested_virt",false))
     guest.set_memory_MBs(config.fetch("memory_MBs",4096))
     guest.set_gui(config.fetch("gui",false),config.fetch("vram_MBs",96))
